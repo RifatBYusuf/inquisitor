@@ -128,9 +128,8 @@ The detection and segmentation models come from these projects. Thanks to their 
 | Project | Used here | License |
 | --- | --- | --- |
 | [Grounding DINO — IDEA Research](https://github.com/IDEA-Research/GroundingDINO) | Text-guided object detection with [grounding-dino-base](https://huggingface.co/IDEA-Research/grounding-dino-base) | [Apache 2.0](https://github.com/IDEA-Research/GroundingDINO/blob/main/LICENSE) |
-| [SAM 2 — Meta](https://github.com/facebookresearch/sam2) | Segmentation with [SAM 2.1 Hiera Large](https://huggingface.co/facebook/sam2.1-hiera-large), with [Small](https://huggingface.co/facebook/sam2.1-hiera-small) as a fallback | [Apache 2.0](https://github.com/facebookresearch/sam2/blob/main/LICENSE) |
+| [SAM 2 — Meta](https://github.com/facebookresearch/sam2), using [Jorge Insua's community distribution](https://github.com/JinsuaFeito-dev/segment-anything-2) | Segmentation with [SAM 2.1 Hiera Large](https://huggingface.co/facebook/sam2.1-hiera-large), with [Small](https://huggingface.co/facebook/sam2.1-hiera-small) as a fallback; installed through [sam2 1.1.0](https://pypi.org/project/sam2/1.1.0/) | Apache 2.0 ([original](https://github.com/facebookresearch/sam2/blob/main/LICENSE), [distribution](https://github.com/JinsuaFeito-dev/segment-anything-2/blob/main/LICENSE)) |
 | [Hugging Face Transformers](https://github.com/huggingface/transformers) | Grounding DINO model loading and inference | [Apache 2.0](https://github.com/huggingface/transformers/blob/main/LICENSE) |
-| [SAM 2 community distribution — Jorge Insua](https://github.com/JinsuaFeito-dev/segment-anything-2) | The [sam2 1.1.0](https://pypi.org/project/sam2/1.1.0/) package used in the setup above | [Apache 2.0](https://github.com/JinsuaFeito-dev/segment-anything-2/blob/main/LICENSE) |
 
 Grounding DINO copyright: 2023–present, IDEA Research. SAM 2 copyright: Meta Platforms, Inc. and affiliates. Transformers copyright: the Hugging Face team.
 
