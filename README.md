@@ -16,16 +16,47 @@ Built by **Md Rifat Bin Yusuf**.
 - Export search reports as JSON.
 - Add segmentation masks and search smaller image tiles when needed.
 
-## Install
+## Install on Windows
 
-The steps below are for Windows PowerShell. Python 3.12 is the version used in the current development environment. Install [Python](https://www.python.org/downloads/) first, then download this repository and open a terminal in its folder.
+These instructions are for a Windows 10 or 11 PC with 64-bit Python 3.12, the Python version used during development. You need internet access for installation and the first model downloads. An NVIDIA GPU is helpful but optional.
 
-Create a virtual environment:
+### 1. Install Python
+
+Install Python 3.12 using the [Windows downloads page](https://www.python.org/downloads/windows/). If using the traditional installer, select **Add python.exe to PATH** and include the Python launcher and Tcl/Tk components (the file picker uses Tk).
+
+Open PowerShell from the Start menu and check:
+
+```powershell
+py -3.12 --version
+```
+
+It should show `Python 3.12.x`. If the command is not found, reopen PowerShell after installing Python and check that Python 3.12 and the launcher are installed.
+
+### 2. Download Inquisitor
+
+The easiest option is to open [this repository](https://github.com/RifatBYusuf/inquisitor), click **Code > Download ZIP**, then right-click the downloaded ZIP and choose **Extract All**. Open the extracted folder that contains `app.py` and `README.md`.
+
+To open PowerShell in that folder, type `powershell` into File Explorer's address bar and press Enter. Run all remaining setup commands in that window. Extract the ZIP first; do not run the app from inside the ZIP.
+
+Alternatively, install [Git for Windows](https://git-scm.com/install/windows), reopen PowerShell, and run these commands from the folder where you want to keep the project:
+
+```powershell
+git clone https://github.com/RifatBYusuf/inquisitor.git
+cd inquisitor
+```
+
+Use either the ZIP method or Git; you do not need both.
+
+### 3. Create the virtual environment
 
 ```powershell
 py -3.12 -m venv .venv
 .\.venv\Scripts\python.exe -m pip install --upgrade pip
 ```
+
+The `.venv` folder keeps the app's packages separate from other Python programs. These commands use its Python directly, so you do not need to activate it or change PowerShell's execution policy.
+
+### 4. Install the packages
 
 Install PyTorch and TorchVision:
 
@@ -46,9 +77,18 @@ Install the remaining packages:
 
 Internet access is needed to install packages and download the models on first use. Model downloads can take a while and need disk space. SAM 2 is loaded when segmentation is enabled.
 
+Check the installed packages:
+
+```powershell
+.\.venv\Scripts\python.exe -m pip check
+.\.venv\Scripts\python.exe -c "import streamlit, torch, torchvision, transformers, sam2, cv2; print('Imports OK'); print('CUDA available:', torch.cuda.is_available())"
+```
+
+`Imports OK` means the main packages can load. `CUDA available: False` means the app will use the CPU. If a package import fails, complete the installation commands above before starting the app.
+
 ## Start the app
 
-Double-click **Run Inquisitor.bat**, or run:
+After installation, double-click **Run Inquisitor.bat** in the project folder, or run this from PowerShell in that folder:
 
 ```powershell
 .\.venv\Scripts\python.exe -m streamlit run app.py
@@ -57,6 +97,19 @@ Double-click **Run Inquisitor.bat**, or run:
 Open [localhost:8501](http://localhost:8501) if the browser does not open automatically. Keep the terminal open while using the app. Press `Ctrl+C` in the terminal to stop it.
 
 The batch launcher makes the app reachable on your local network. Folder selection and webcam indexes always refer to the computer running Inquisitor.
+
+On later runs, just open **Run Inquisitor.bat** again. You do not need to reinstall the packages. If port 8501 is already in use, stop the other instance or add `--server.port 8502` to the terminal launch command, then open `http://localhost:8502`.
+
+## Try your first search
+
+1. Put a few JPG or PNG images in a folder. Include an image with an obvious object, such as a car or backpack.
+2. Start Inquisitor and open **Search files / folders**.
+3. Select **Images only**, click **Choose folder / drive**, and choose that folder.
+4. Enter `car` or another object present in your images, then start the search.
+5. Wait for the first model download and loading to finish. This first search takes longer than later searches.
+6. Review the matching images in the results panel. If there are no matches, try a simpler description or lower the confidence in the sidebar.
+
+Once this works, try a larger folder, recorded videos, or the camera options below.
 
 ## Search files and folders
 
@@ -97,6 +150,8 @@ Keep the phone's camera page open. The connection uses a local HTTPS certificate
 
 Matching images and frames appear in result cards with the source name and timestamp or video offset. Open **Search history** to review saved jobs and export their reports.
 
+Reports and matching snapshots are stored in `search_data/` inside the project folder. Keep that folder if you want to keep your history when moving the app to another folder. It is excluded from Git uploads.
+
 Under **Advanced detection settings**:
 
 - **Detection confidence** defaults to 55%. Lower it to include more possible matches, or raise it to filter out weaker detections. This score is not a guarantee that a match is correct.
@@ -122,6 +177,19 @@ Detection runs locally. The app does not send your media to a hosted AI inferenc
 - The file picker needs a desktop session on the computer running the app.
 - If a camera fails to connect, check its address, credentials, network access, and whether another program is using the webcam.
 - If the phone cannot connect, check the Wi-Fi IP address, certificate, and firewall access for the phone camera port.
+
+## Update the app
+
+Stop Inquisitor first. If you downloaded it with Git, open PowerShell in the project folder and run:
+
+```powershell
+git pull --ff-only
+.\.venv\Scripts\python.exe -m pip install -r requirements-web.txt
+```
+
+Check this README for any new AI package requirements, then start the app again. If Git reports local changes, save those changes before updating.
+
+If you used Download ZIP, download and extract the latest ZIP into a new folder, then follow the installation steps there. To keep saved results, copy your old `search_data/` folder into the new project folder before starting it.
 
 ## Credits and licenses
 
