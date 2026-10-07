@@ -1,0 +1,392 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: #080e1b;
+        color: #e3edff;
+        font:
+          13px system-ui,
+          sans-serif;
+      }
+      .toolbar {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        margin-bottom: 12px;
+        flex-wrap: wrap;
+      }
+      .toolbar span {
+        flex: 1;
+        color: #9db4ce;
+      }
+      button {
+        background: #152b46;
+        color: #e3edff;
+        border: 1px solid #345377;
+        padding: 7px 12px;
+        border-radius: 6px;
+        cursor: pointer;
+      }
+      button:disabled {
+        opacity: 0.4;
+        cursor: default;
+      }
+      .wall {
+        display: grid;
+        grid-template-columns: repeat(var(--side), minmax(0, 1fr));
+        gap: 6px;
+        width: 100%;
+      }
+      .camera {
+        position: relative;
+        background: #0c1727;
+        border: 2px solid #25405f;
+        border-radius: 8px;
+        overflow: hidden;
+        min-width: 0;
+      }
+      .picture {
+        position: relative;
+        aspect-ratio: 16/9;
+        background: #030812;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #7692b5;
+      }
+      .picture img {
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        object-fit: contain;
+      }
+      .picture .message {
+        padding: 10px;
+        text-align: center;
+        z-index: 1;
+        background: #030812bb;
+      }
+      .timestamp {
+        position: absolute;
+        top: 6px;
+        left: 6px;
+        z-index: 2;
+        padding: 3px 6px;
+        border-radius: 4px;
+        background: #030812cc;
+        color: #fff;
+        font-size: clamp(8px, 1vw, 12px);
+        font-variant-numeric: tabular-nums;
+        pointer-events: none;
+      }
+      .wall.dense .timestamp {
+        top: 2px;
+        left: 2px;
+        padding: 2px;
+        font-size: 8px;
+      }
+      .info {
+        padding: 6px;
+        overflow: hidden;
+      }
+      .name {
+        font-weight: 650;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .status {
+        font-size: 11px;
+        color: #77caa1;
+        margin-top: 3px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .camera.searching {
+        border-color: #57b9ff;
+        box-shadow: 0 0 15px #287be577;
+      }
+      .camera.searching .status {
+        color: #8acfff;
+        font-weight: 750;
+      }
+      .camera.offline .status {
+        color: #ffb182;
+      }
+      .camera:focus-visible {
+        outline: 3px solid #fff;
+      }
+      .camera.focused {
+        position: fixed;
+        inset: 44px 8px 8px;
+        z-index: 10;
+        display: flex;
+        flex-direction: column;
+      }
+      .camera.focused .picture {
+        flex: 1;
+        aspect-ratio: auto;
+      }
+      .camera.focused .info {
+        flex: 0;
+      }
+      .hint {
+        font-size: 11px;
+        color: #9db4ce;
+        margin: 12px 0;
+      }
+      .wall.dense .info {
+        padding: 4px;
+      }
+      .wall.dense .name,
+      .wall.dense .status {
+        font-size: 9px;
+      }
+      .wall.dense .message {
+        font-size: 9px;
+        padding: 4px;
+      }
+      @media (max-width: 600px) {
+        .wall {
+          gap: 4px;
+        }
+        .info {
+          padding: 5px;
+        }
+        .name {
+          font-size: 11px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="toolbar">
+      <span id="summary">Connecting live playback...</span
+      ><button id="previous">Previous</button><span id="page"></span
+      ><button id="next">Next</button><button id="pause">Pause playback</button
+      ><button id="fullscreen">Fullscreen</button>
+    </div>
+    <div class="wall" id="wall" aria-label="Live camera control room"></div>
+    <p class="hint">
+      Blue border: camera being searched. Click a camera to enlarge it; click
+      again or press Escape to return.
+    </p>
+    <script>
+      const config = __CONFIG__;
+      const wall = document.getElementById("wall"),
+        count = config.side * config.side;
+      wall.style.setProperty("--side", config.side);
+      wall.classList.toggle("dense", config.side >= 4);
+      const pausedSources = new Set(config.feeds.filter(feed => feed.paused).map(feed => feed.id));
+      let page = 0,
+        paused = false,
+        cache = new Map(),
+        sequence = {},
+        cards = new Map(),
+        focus = null;
+      const pages = Math.max(1, Math.ceil(config.feeds.length / count));
+      function draw() {
+        wall.replaceChildren();
+        cards.clear();
+        focus = null;
+        for (let i = 0; i < count; i++) {
+          if (page * count + i >= config.feeds.length) break;
+          const feed = config.feeds[page * count + i],
+            card = document.createElement("div");
+          card.className = "camera";
+          const picture = document.createElement("div");
+          picture.className = "picture";
+          const img = document.createElement("img");
+          img.alt = feed ? feed.name + " live feed" : "";
+          img.hidden = true;
+          const message = document.createElement("span");
+          message.className = "message";
+          message.textContent = feed ? "Connecting..." : "No camera";
+          const timestamp = document.createElement("time");
+          timestamp.className = "timestamp";
+          timestamp.hidden = true;
+          picture.append(img, message, timestamp);
+          card.append(picture);
+          const info = document.createElement("div");
+          info.className = "info";
+          const name = document.createElement("div");
+          name.className = "name";
+          name.textContent = feed ? feed.name : "Empty slot";
+          const status = document.createElement("div");
+          status.className = "status";
+          status.textContent = feed ? "Connecting" : "Connect a source";
+          info.append(name, status);
+          card.append(info);
+          wall.append(card);
+          if (feed) {
+            card.tabIndex = 0;
+            card.role = "button";
+            card.setAttribute("aria-label", "Enlarge " + feed.name);
+            card.title = feed.location || feed.name;
+            function toggle() {
+              if (focus) focus.classList.remove("focused");
+              if (focus === card) {
+                focus = null;
+                return;
+              }
+              focus = card;
+              card.classList.add("focused");
+            }
+            card.onclick = toggle;
+            card.onkeydown = (e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                toggle();
+              }
+            };
+            cards.set(feed.id, { card, img, message, status, timestamp });
+          }
+        }
+        document.getElementById("page").textContent = page + 1 + " / " + pages;
+        document.getElementById("previous").disabled = page === 0;
+        document.getElementById("next").disabled = page >= pages - 1;
+        apply();
+      }
+      function apply() {
+        for (const [id, tile] of cards) {
+          const state = cache.get(id);
+          if (!state) continue;
+          tile.card.classList.toggle("searching", state.searching);
+          tile.card.classList.toggle("offline", !state.live);
+          tile.card.setAttribute(
+            "aria-label",
+            (state.searching ? "Searching " : "Enlarge ") +
+              config.feeds.find((f) => f.id === id).name,
+          );
+          tile.status.textContent = state.searching
+            ? "SEARCHING: " + state.query
+            : paused || pausedSources.has(id)
+              ? "Playback paused"
+              : state.status;
+          if (state.jpeg) {
+            tile.img.src = "data:image/jpeg;base64," + state.jpeg;
+            tile.img.hidden = false;
+          }
+          tile.timestamp.hidden = !state.captured || !state.jpeg;
+          if (!tile.timestamp.hidden) {
+            const captured = new Date(state.captured);
+            tile.timestamp.dateTime = state.captured;
+            tile.timestamp.textContent = captured.toLocaleString([], {
+              year: "numeric", month: "2-digit", day: "2-digit",
+              hour: "2-digit", minute: "2-digit", second: "2-digit",
+              hour12: false,
+            });
+            tile.timestamp.title = "Frame captured at " + state.captured;
+          }
+          tile.message.hidden = state.live && !!state.jpeg;
+          if (!tile.message.hidden) tile.message.textContent = state.status;
+        }
+      }
+      document.getElementById("previous").onclick = () => {
+        page--;
+        draw();
+      };
+      document.getElementById("next").onclick = () => {
+        page++;
+        draw();
+      };
+      document.getElementById("pause").onclick = () => {
+        paused = !paused;
+        document.getElementById("pause").textContent = paused
+          ? "Resume playback"
+          : "Pause playback";
+        apply();
+      };
+      document.getElementById("fullscreen").onclick = () => {
+        if (document.fullscreenElement) document.exitFullscreen();
+        else document.documentElement.requestFullscreen().catch(() => {});
+      };
+      document.onkeydown = (e) => {
+        if (e.key === "Escape" && focus) {
+          focus.classList.remove("focused");
+          focus = null;
+        }
+      };
+      const host = new URL(document.referrer || window.location.href).hostname;
+      const endpoint =
+        "http://" +
+        (host.includes(":") ? "[" + host + "]" : host) +
+        ":" +
+        config.port +
+        "/frames";
+      async function poll() {
+        try {
+          const response = await fetch(
+            endpoint +
+              "?token=" +
+              encodeURIComponent(config.token) +
+              "&previous=" +
+              encodeURIComponent(JSON.stringify(sequence)) +
+              "&visible=" +
+              encodeURIComponent(paused ? "" : [...cards.keys()].filter(id => !pausedSources.has(id) || !cache.get(id)?.jpeg).join(",")),
+            { cache: "no-store", signal: AbortSignal.timeout(5000) },
+          );
+          if (!response.ok) throw new Error("Playback unavailable");
+          const states = await response.json();
+          let live = 0,
+            active = null;
+          for (const state of states) {
+            const old = cache.get(state.id);
+            if (state.live) live++;
+            if (!paused && (!pausedSources.has(state.id) || !old?.jpeg)) {
+              if (state.jpeg) sequence[state.id] = state.sequence;
+              cache.set(state.id, {
+                ...state,
+                jpeg: state.jpeg || (old && old.jpeg),
+                captured: state.jpeg ? state.captured : old && old.captured,
+              });
+            } else if (old) {
+              cache.set(state.id, {
+                ...old,
+                live: state.live,
+                status: state.status,
+                searching: state.searching,
+                query: state.query,
+              });
+            }
+            if (state.searching) active = state.id;
+          }
+          if (active && !cards.has(active)) {
+            const index = config.feeds.findIndex((f) => f.id === active);
+            if (index >= 0) {
+              page = Math.floor(index / count);
+              draw();
+            }
+          }
+          document.getElementById("summary").textContent =
+            live +
+            " / " +
+            config.feeds.length +
+            " cameras live" +
+            (paused ? " - playback paused" : "");
+          apply();
+        } catch (error) {
+          document.getElementById("summary").textContent =
+            "Live playback connection unavailable - retrying";
+          for (const tile of cards.values()) {
+            tile.card.classList.add("offline");
+            tile.message.hidden = false;
+            tile.message.textContent = "Playback connection lost";
+            tile.status.textContent = "Reconnecting...";
+          }
+        }
+        if (document.visibilityState !== "hidden") setTimeout(poll, 100);
+        else setTimeout(poll, 1000);
+      }
+      draw();
+      poll();
+    </script>
+  </body>
+</html>

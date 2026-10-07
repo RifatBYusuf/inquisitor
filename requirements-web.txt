@@ -1,0 +1,5 @@
+# Install these in the existing virtual environment, which already has the AI packages.
+streamlit>=1.40,<2
+opencv-python-headless>=4.10,<5
+cryptography>=43
+qrcode[pil]>=8

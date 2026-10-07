@@ -1,0 +1,16 @@
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+search_data/
+.env
+.env.*
+!.env.example
+.streamlit/secrets.toml
+*.pt
+*.pth
+*.safetensors
+.codex/
+.agents/
+.aws/

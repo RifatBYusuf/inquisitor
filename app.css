@@ -1,0 +1,159 @@
+.stApp {
+  background: radial-gradient(ellipse at 75% 0%, #122743 0%, #080e1b 52%);
+  color: #e3edff;
+}
+header[data-testid="stHeader"] {
+  background: #080e1bee;
+}
+.block-container {
+  max-width: 1500px;
+  padding-top: 2rem;
+}
+[data-testid="stSidebar"] {
+  background: #0b1425;
+  border-right: 1px solid #20334e;
+}
+.brand {
+  font-size: 27px;
+  font-weight: 800;
+  letter-spacing: 5px;
+  color: #e6f2ff;
+}
+.brand small {
+  display: block;
+  font-size: 10px;
+  letter-spacing: 3px;
+  color: #6e99c7;
+  margin-top: 8px;
+}
+.eyebrow {
+  font-size: 11px;
+  letter-spacing: 3px;
+  color: #70b3ff;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+.hero {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid #263e5e;
+  border-radius: 18px;
+  padding: 35px;
+  background: linear-gradient(120deg, #10213b, #0c1525);
+  margin-bottom: 24px;
+}
+.hero h1 {
+  font-size: clamp(30px, 4vw, 48px);
+  font-weight: 700;
+  letter-spacing: -1.5px;
+  margin: 0;
+  color: #eef5ff;
+}
+.hero p {
+  color: #93aac6;
+  font-size: 16px;
+  margin: 12px 0 0;
+  max-width: 680px;
+}
+.orb {
+  position: absolute;
+  right: 6%;
+  top: -25px;
+  width: 220px;
+  height: 220px;
+  border: 1px solid #357ddb40;
+  border-radius: 50%;
+  box-shadow:
+    0 0 60px #287bd512,
+    inset 0 0 50px #287bd512;
+  pointer-events: none;
+}
+.orb:before,
+.orb:after {
+  content: "";
+  position: absolute;
+  inset: 28px;
+  border: 1px solid #357ddb50;
+  border-radius: 50%;
+}
+.orb:after {
+  inset: 66px;
+  background: #1d66bb25;
+  animation: pulse 4s ease-in-out infinite;
+}
+.empty {
+  padding: 65px 20px;
+  border: 1px dashed #2b4566;
+  border-radius: 15px;
+  text-align: center;
+  background: #0c1727;
+}
+.empty h3 {
+  font-size: 23px;
+  color: #cedef3;
+}
+.empty p {
+  color: #7893b3;
+  font-size: 14px;
+}
+.signal {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  background: #57b9ff;
+  border-radius: 50%;
+  margin-right: 8px;
+  box-shadow: 0 0 12px #57b9ff;
+}
+div[data-testid="stVerticalBlockBorderWrapper"] {
+  border-color: #223955 !important;
+  border-radius: 15px !important;
+  background: #0d192aaa;
+}
+.stButton button,
+.stDownloadButton button {
+  border-radius: 9px;
+  border: 1px solid #2c4666;
+  min-height: 43px;
+}
+.stButton button:hover {
+  border-color: #4597ed;
+  background: #172c48;
+}
+.stButton button[kind="primary"] {
+  background: #267ae5;
+  border-color: #267ae5;
+  color: white;
+  font-weight: 600;
+}
+[data-testid="stFileUploaderFileName"] {
+  display: none;
+}
+[data-testid="stMetricValue"] {
+  color: #dcecff;
+  font-size: 28px;
+}
+.stTextInput div[data-baseweb="input"] {
+  border-radius: 10px;
+  border-color: #2a4261;
+}
+@keyframes pulse {
+  50% {
+    opacity: 0.45;
+    transform: scale(0.94);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+  }
+}
+@media (max-width: 700px) {
+  .hero {
+    padding: 22px;
+  }
+  .orb {
+    opacity: 0.3;
+    right: -80px;
+  }
+}
