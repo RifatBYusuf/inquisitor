@@ -4,6 +4,8 @@ Search photos, recorded videos, and live cameras by describing what you want to 
 
 Inquisitor runs the detection models on your computer and shows matching images or frames in a Streamlit web interface.
 
+Built by **Md Rifat Bin Yusuf**.
+
 ## What it can do
 
 - Search individual files, folders, mounted drives, and network folders your computer can access.
